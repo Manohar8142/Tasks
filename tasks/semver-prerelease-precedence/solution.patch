@@ -1,0 +1,20 @@
+diff --git a/semverlite/version.py b/semverlite/version.py
+index 90d7a1f..5e9a749 100644
+--- a/semverlite/version.py
++++ b/semverlite/version.py
+@@ -56,7 +56,14 @@ class Version:
+         return Version(self.major, self.minor, self.patch + 1)
+ 
+     def _key(self):
+-        return (self.major, self.minor, self.patch, self.prerelease or "")
++        # A release sorts after all of its pre-releases (SemVer 2.0.0, item 11).
++        if self.prerelease is None:
++            return (self.major, self.minor, self.patch, (1,))
++        idents = tuple(
++            (0, int(ident), "") if ident.isdigit() else (1, 0, ident)
++            for ident in self.prerelease.split(".")
++        )
++        return (self.major, self.minor, self.patch, (0, idents))
+ 
+     def __eq__(self, other):
+         if not isinstance(other, Version):

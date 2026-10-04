@@ -1,0 +1,52 @@
+diff --git a/ttlcache/cache.py b/ttlcache/cache.py
+index 19db8b5..36f075d 100644
+--- a/ttlcache/cache.py
++++ b/ttlcache/cache.py
+@@ -27,8 +27,16 @@ class TTLCache:
+         self._timer = timer
+         self._data: OrderedDict[Hashable, tuple[object, float]] = OrderedDict()
+ 
++    def _expired(self, expires_at: float, now: float) -> bool:
++        return now >= expires_at
++
++    def _purge(self, now: float) -> None:
++        for key in [k for k, (_, exp) in self._data.items() if self._expired(exp, now)]:
++            del self._data[key]
++
+     def __setitem__(self, key, value) -> None:
+         now = self._timer()
++        self._purge(now)
+         if key in self._data:
+             del self._data[key]
+         elif len(self._data) >= self.maxsize:
+@@ -40,7 +48,7 @@ class TTLCache:
+         if item is None:
+             return default
+         value, expires_at = item
+-        if self._timer() > expires_at:
++        if self._expired(expires_at, self._timer()):
+             del self._data[key]
+             return default
+         self._data.move_to_end(key)
+@@ -54,18 +62,19 @@ class TTLCache:
+ 
+     def __contains__(self, key) -> bool:
+         item = self._data.get(key)
+-        return item is not None and self._timer() <= item[1]
++        return item is not None and not self._expired(item[1], self._timer())
+ 
+     def __delitem__(self, key) -> None:
+         del self._data[key]
+ 
+     def __len__(self) -> int:
++        self._purge(self._timer())
+         return len(self._data)
+ 
+     def keys(self) -> list:
+         """Live keys, least recently used first."""
+         now = self._timer()
+-        return [k for k, (_, expires_at) in self._data.items() if now <= expires_at]
++        return [k for k, (_, expires_at) in self._data.items() if not self._expired(expires_at, now)]
+ 
+     def clear(self) -> None:
+         self._data.clear()

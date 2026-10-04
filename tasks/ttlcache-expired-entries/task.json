@@ -1,0 +1,29 @@
+{
+  "task_id": "ttlcache-expired-entries",
+  "category": "bugfix",
+  "difficulty": "medium",
+  "summary": "Expired TTL cache entries remain visible, are counted by len(), and cause live entries to be evicted.",
+  "timeout_s": 120,
+  "tool_call_budget": 40,
+  "fail_to_pass": [
+    "_hidden_tests/test_expiry.py::test_expired_entries_do_not_force_eviction",
+    "_hidden_tests/test_expiry.py::test_expires_exactly_at_ttl_get",
+    "_hidden_tests/test_expiry.py::test_expires_exactly_at_ttl_getitem_and_contains",
+    "_hidden_tests/test_expiry.py::test_keys_excludes_entry_at_expiry_instant",
+    "_hidden_tests/test_expiry.py::test_len_counts_only_live_entries"
+  ],
+  "pass_to_pass": [
+    "_hidden_tests/test_existing_behaviour.py::test_basic_get_set",
+    "_hidden_tests/test_existing_behaviour.py::test_delete_and_clear",
+    "_hidden_tests/test_existing_behaviour.py::test_expired_after_ttl",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_arguments[-1-1]",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_arguments[0-1]",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_arguments[1--5]",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_arguments[1-0]",
+    "_hidden_tests/test_existing_behaviour.py::test_keys_in_lru_order",
+    "_hidden_tests/test_existing_behaviour.py::test_lru_eviction_among_live_entries",
+    "_hidden_tests/test_existing_behaviour.py::test_missing_key_raises",
+    "_hidden_tests/test_existing_behaviour.py::test_overwrite_refreshes_ttl_without_eviction",
+    "_hidden_tests/test_expiry.py::test_full_cache_of_expired_entries_accepts_new_keys"
+  ]
+}

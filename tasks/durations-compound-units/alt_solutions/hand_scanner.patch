@@ -1,0 +1,69 @@
+diff --git a/durations/core.py b/durations/core.py
+index ada0649..c089942 100644
+--- a/durations/core.py
++++ b/durations/core.py
+@@ -8,7 +8,8 @@ from datetime import timedelta
+ # Unit suffix -> length in seconds, largest first.
+ UNITS = {"d": 86400, "h": 3600, "m": 60, "s": 1}
+ 
+-_SINGLE = re.compile(r"^\s*(\d+)\s*([dhms])\s*$")
++_ORDER = ["d", "h", "m", "s", "ms"]
++_MICROS = {"d": 86400 * 10**6, "h": 3600 * 10**6, "m": 60 * 10**6, "s": 10**6, "ms": 10**3}
+ 
+ 
+ def parse_duration(text: str) -> timedelta:
+@@ -19,11 +20,49 @@ def parse_duration(text: str) -> timedelta:
+     """
+     if not isinstance(text, str):
+         raise TypeError(f"expected str, got {type(text).__name__}")
+-    match = _SINGLE.match(text)
+-    if not match:
+-        raise ValueError(f"invalid duration: {text!r}")
+-    amount, unit = match.groups()
+-    return timedelta(seconds=int(amount) * UNITS[unit])
++    chars = text.strip()
++    if not chars:
++        raise ValueError("empty duration")
++    i, n = 0, len(chars)
++    total_scaled = 0  # microseconds * 10**SCALE
++    SCALE = 9
++    next_allowed = 0
++    while i < n:
++        while i < n and chars[i].isspace():
++            i += 1
++        start = i
++        while i < n and chars[i].isdigit():
++            i += 1
++        whole = chars[start:i]
++        frac = ""
++        if i < n and chars[i] == ".":
++            i += 1
++            fstart = i
++            while i < n and chars[i].isdigit():
++                i += 1
++            frac = chars[fstart:i]
++            if not frac:
++                raise ValueError(f"invalid number in {text!r}")
++        if not whole or not whole.isascii():
++            raise ValueError(f"invalid duration: {text!r}")
++        while i < n and chars[i].isspace():
++            i += 1
++        if chars.startswith("ms", i):
++            unit, i = "ms", i + 2
++        elif i < n and chars[i] in "dhms":
++            unit, i = chars[i], i + 1
++        else:
++            raise ValueError(f"missing or unknown unit in {text!r}")
++        rank = _ORDER.index(unit)
++        if rank < next_allowed:
++            raise ValueError(f"units out of order or repeated in {text!r}")
++        next_allowed = rank + 1
++        frac = frac[:SCALE].ljust(SCALE, "0")
++        total_scaled += (int(whole) * 10**SCALE + int(frac)) * _MICROS[unit]
++    micros, rem = divmod(total_scaled, 10**SCALE)
++    if rem * 2 >= 10**SCALE:
++        micros += 1
++    return timedelta(microseconds=micros)
+ 
+ 
+ def format_duration(delta: timedelta) -> str:

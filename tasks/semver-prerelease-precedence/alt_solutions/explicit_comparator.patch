@@ -1,0 +1,50 @@
+diff --git a/semverlite/version.py b/semverlite/version.py
+index 90d7a1f..068b121 100644
+--- a/semverlite/version.py
++++ b/semverlite/version.py
+@@ -56,7 +56,7 @@ class Version:
+         return Version(self.major, self.minor, self.patch + 1)
+ 
+     def _key(self):
+-        return (self.major, self.minor, self.patch, self.prerelease or "")
++        return (self.major, self.minor, self.patch, self.prerelease)
+ 
+     def __eq__(self, other):
+         if not isinstance(other, Version):
+@@ -66,7 +66,11 @@ class Version:
+     def __lt__(self, other):
+         if not isinstance(other, Version):
+             return NotImplemented
+-        return self._key() < other._key()
++        core_self = (self.major, self.minor, self.patch)
++        core_other = (other.major, other.minor, other.patch)
++        if core_self != core_other:
++            return core_self < core_other
++        return _compare_prerelease(self.prerelease, other.prerelease) < 0
+ 
+     def __hash__(self):
+         return hash(self._key())
+@@ -81,3 +85,23 @@ class Version:
+ 
+     def __repr__(self):
+         return f"Version.parse({str(self)!r})"
++
++
++def _compare_prerelease(a: str | None, b: str | None) -> int:
++    if a == b:
++        return 0
++    if a is None:
++        return 1
++    if b is None:
++        return -1
++    left, right = a.split("."), b.split(".")
++    for x, y in zip(left, right):
++        if x == y:
++            continue
++        x_num, y_num = x.isdigit(), y.isdigit()
++        if x_num and y_num:
++            return -1 if int(x) < int(y) else 1
++        if x_num != y_num:
++            return -1 if x_num else 1
++        return -1 if x < y else 1
++    return (len(left) > len(right)) - (len(left) < len(right))

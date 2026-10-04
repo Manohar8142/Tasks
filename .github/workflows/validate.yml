@@ -1,0 +1,37 @@
+name: validate-tasks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  local:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pytest==8.3.3
+      - name: Harness tests
+        run: python -m pytest -q
+      - name: Release checks for every task
+        run: python -m harness validate
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build grader image
+        run: docker build -f docker/grader.Dockerfile -t swe-tasks-grader .
+      - name: Build an agent environment image
+        run: docker build -f docker/agent.Dockerfile --build-arg TASK=ttlcache-expired-entries -t task-env .
+      - name: Hidden tests are not in the agent image
+        run: |
+          docker run --rm --network none task-env bash -c \
+            'test ! -e /workspace/hidden_tests && test ! -e /workspace/_hidden_tests && ! grep -rq test_expiry /workspace'
+      - name: Release checks with sandboxed grading (no network)
+        run: python -m harness --sandbox docker validate --runs 2

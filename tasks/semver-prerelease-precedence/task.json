@@ -1,0 +1,36 @@
+{
+  "task_id": "semver-prerelease-precedence",
+  "category": "bugfix",
+  "difficulty": "medium",
+  "summary": "Version ordering ignores SemVer 2.0.0 pre-release precedence rules.",
+  "timeout_s": 120,
+  "tool_call_budget": 40,
+  "fail_to_pass": [
+    "_hidden_tests/test_precedence.py::test_numeric_identifiers_compare_numerically",
+    "_hidden_tests/test_precedence.py::test_prerelease_lower_than_release",
+    "_hidden_tests/test_precedence.py::test_sorting_matches_spec",
+    "_hidden_tests/test_precedence.py::test_spec_chain_pairwise[4]",
+    "_hidden_tests/test_precedence.py::test_spec_chain_pairwise[6]"
+  ],
+  "pass_to_pass": [
+    "_hidden_tests/test_existing_behaviour.py::test_build_metadata_ignored",
+    "_hidden_tests/test_existing_behaviour.py::test_bumps",
+    "_hidden_tests/test_existing_behaviour.py::test_comparison_with_other_types",
+    "_hidden_tests/test_existing_behaviour.py::test_core_ordering",
+    "_hidden_tests/test_existing_behaviour.py::test_equal_versions_hash_equal",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_versions_rejected[01.2.3]",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_versions_rejected[1.2.3+]",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_versions_rejected[1.2.3-01]",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_versions_rejected[1.2.3-]",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_versions_rejected[1.2]",
+    "_hidden_tests/test_existing_behaviour.py::test_invalid_versions_rejected[a.b.c]",
+    "_hidden_tests/test_existing_behaviour.py::test_parse_roundtrip",
+    "_hidden_tests/test_precedence.py::test_longer_identifier_list_wins_when_prefix_equal",
+    "_hidden_tests/test_precedence.py::test_numeric_lower_than_alphanumeric",
+    "_hidden_tests/test_precedence.py::test_spec_chain_pairwise[0]",
+    "_hidden_tests/test_precedence.py::test_spec_chain_pairwise[1]",
+    "_hidden_tests/test_precedence.py::test_spec_chain_pairwise[2]",
+    "_hidden_tests/test_precedence.py::test_spec_chain_pairwise[3]",
+    "_hidden_tests/test_precedence.py::test_spec_chain_pairwise[5]"
+  ]
+}
